@@ -1,26 +1,31 @@
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import {
-  FormControl,
-  FormLabel,
-  Input,
-  Editable,
-  EditableInput,
-  EditablePreview,
-} from "@chakra-ui/react";
+import { FormControl, FormLabel, Input } from "@chakra-ui/react";
+import { useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { boardInfo } from "../../store/settings";
+import { StatusSettings } from "./StatusSettings";
 
-const BoardInfoSettings = () => {
-  const { statuses, boardName, boardEntity } = useSelector(boardInfo);
-  const onChange = () => {
+const BoardInfoSettings = ({ boardInfo, refs, onChangeStatuses }) => {
+  const { boardName, boardEntity, statuses } = useSelector(boardInfo);
+  const boardNameRef = useRef(boardName);
+  const boardEntityRef = useRef(boardEntity);
+  const [localStatuses, setLocalStatuses] = useState(statuses);
+
+  const changeStatuses = (newStatuses) => setLocalStatuses(newStatuses);
+
+  const saveSettings = () => {
     throw new Error("Setting changed WIP");
-  }
+  };
   return (
     <form>
       <div className="grid grid-cols-2 gap-3">
         <FormControl>
           <FormLabel htmlFor="boardName">Board Name</FormLabel>
-          <Input id="boardName" value={boardName} onChange={onChange} placeholder="Board Name" />
+          <Input
+            id="boardName"
+            ref={refs.boardName}
+            defaultValue={boardName}
+            placeholder="Board Name"
+          />
         </FormControl>
         <FormControl>
           <FormLabel htmlFor="boardEntity">
@@ -28,43 +33,16 @@ const BoardInfoSettings = () => {
           </FormLabel>
           <Input
             id="boardEntity"
-            value={boardEntity}
-            onChange={onChange}
+            ref={refs.boardEntity}
+            defaultValue={boardEntity}
             placeholder="Jobs, Tasks, Characters..."
           />
         </FormControl>
         <div className="col-span-2">
-          <h6 className="mb-2">Statuses</h6>
-          <DragDropContext>
-            <Droppable droppableId="statusesOrder">
-              {(provided) => (
-                <div
-                  className="flex flex-col gap-2"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  {statuses.map((status, index) => (
-                    <Draggable draggableId={`${status.id}`} index={index}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className="border-2 bg-white border-darkGrey p-3 rounded-lg"
-                        >
-                          <Editable defaultValue={status.name}>
-                            <EditablePreview />
-                            <EditableInput />
-                          </Editable>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+          <StatusSettings
+            statuses={localStatuses}
+            onChangeStatuses={changeStatuses}
+          />
         </div>
       </div>
     </form>
